@@ -20,6 +20,8 @@ export interface QuizState {
   showFeedback: boolean
   isCorrect: boolean | null
   lastSelectedArticle: Article | null
+  writtenAnswer: string
+  isWritingMode: boolean
 }
 
 export interface FeedbackProps {

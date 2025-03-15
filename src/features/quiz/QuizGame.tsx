@@ -10,7 +10,7 @@
  * - High score persistence
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, KeyboardEvent } from 'react'
 import styled from 'styled-components'
 import { Article, Word, QuizState } from '../../types/quiz'
 
@@ -303,6 +303,89 @@ const SpecialCharButton = styled.button`
   }
 `
 
+const ModeToggle = styled.div`
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1rem;
+  color: #4b5563;
+`
+
+const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e5e7eb;
+    transition: .4s;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+  }
+
+  input:checked + span {
+    background-color: #2563eb;
+  }
+
+  input:checked + span:before {
+    transform: translateX(26px);
+  }
+`
+
+const ConfirmButton = styled.button`
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+
+  &:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+
+  &:disabled {
+    background-color: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+`
+
 export const QuizGame = () => {
   const [state, setState] = useState<QuizState>({
     currentWord: null,
@@ -311,6 +394,8 @@ export const QuizGame = () => {
     showFeedback: false,
     isCorrect: null,
     lastSelectedArticle: null,
+    writtenAnswer: '',
+    isWritingMode: false,
   })
 
   const selectNewWord = useCallback(() => {
@@ -321,6 +406,7 @@ export const QuizGame = () => {
       showFeedback: false,
       isCorrect: null,
       lastSelectedArticle: null,
+      writtenAnswer: '',
     }))
   }, [])
 
@@ -340,24 +426,80 @@ export const QuizGame = () => {
 
     const isCorrect = selectedArticle === state.currentWord.article
     
-    // Update score and feedback synchronously
+    if (state.isWritingMode) {
+      // In writing mode, only update the selected article
+      setState(prev => ({
+        ...prev,
+        lastSelectedArticle: selectedArticle,
+      }))
+    } else {
+      // In article-only mode, proceed with feedback and next word
+      setState(prev => ({
+        ...prev,
+        showFeedback: true,
+        isCorrect,
+        lastSelectedArticle: selectedArticle,
+        currentScore: isCorrect ? prev.currentScore + 1 : prev.currentScore,
+        highScore: isCorrect && prev.currentScore + 1 > prev.highScore ? prev.currentScore + 1 : prev.highScore,
+      }))
+      setTimeout(selectNewWord, 2000)
+    }
+  }
+
+  const handleWrittenAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setState(prev => ({ ...prev, writtenAnswer: e.target.value }))
+  }
+
+  const handleAnswerSubmit = () => {
+    if (!state.currentWord || !state.lastSelectedArticle) return
+
+    const isArticleCorrect = state.lastSelectedArticle === state.currentWord.article
+    const isWordCorrect = state.writtenAnswer.trim().toLowerCase() === state.currentWord.german.toLowerCase()
+    const isCorrect = isArticleCorrect && isWordCorrect
+
     setState(prev => ({
       ...prev,
       showFeedback: true,
       isCorrect,
-      lastSelectedArticle: selectedArticle,
       currentScore: isCorrect ? prev.currentScore + 1 : prev.currentScore,
       highScore: isCorrect && prev.currentScore + 1 > prev.highScore ? prev.currentScore + 1 : prev.highScore,
     }))
 
-    // Schedule next word
     setTimeout(selectNewWord, 2000)
+  }
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && state.isWritingMode && state.lastSelectedArticle) {
+      handleAnswerSubmit()
+    }
+  }
+
+  const toggleWritingMode = () => {
+    setState(prev => ({
+      ...prev,
+      isWritingMode: !prev.isWritingMode,
+      writtenAnswer: '',
+      lastSelectedArticle: null,
+      showFeedback: false,
+    }))
   }
 
   if (!state.currentWord) return <div>Loading...</div>
 
   return (
     <QuizContainer>
+      <ModeToggle>
+        <span>Writing Mode</span>
+        <ToggleSwitch>
+          <input
+            type="checkbox"
+            checked={state.isWritingMode}
+            onChange={toggleWritingMode}
+          />
+          <span />
+        </ToggleSwitch>
+      </ModeToggle>
+
       <QuestionText data-testid="question-text">
         Write "{state.currentWord.english}" in German
       </QuestionText>
@@ -380,15 +522,39 @@ export const QuizGame = () => {
       <GermanWord
         type="text"
         placeholder="Type the German word here"
-        value={state.currentWord.german}
-        readOnly
+        value={state.isWritingMode ? state.writtenAnswer : state.currentWord.german}
+        onChange={handleWrittenAnswerChange}
+        onKeyPress={handleKeyPress}
+        readOnly={!state.isWritingMode}
       />
 
       <SpecialCharacters>
         {['ä', 'ö', 'ü', 'ß'].map(char => (
-          <SpecialCharButton key={char}>{char}</SpecialCharButton>
+          <SpecialCharButton 
+            key={char}
+            onClick={() => {
+              if (state.isWritingMode) {
+                setState(prev => ({
+                  ...prev,
+                  writtenAnswer: prev.writtenAnswer + char
+                }))
+              }
+            }}
+            disabled={!state.isWritingMode}
+          >
+            {char}
+          </SpecialCharButton>
         ))}
       </SpecialCharacters>
+
+      {state.isWritingMode && (
+        <ConfirmButton
+          onClick={handleAnswerSubmit}
+          disabled={!state.lastSelectedArticle || !state.writtenAnswer.trim()}
+        >
+          Check Answer
+        </ConfirmButton>
+      )}
 
       {state.showFeedback && state.lastSelectedArticle && (
         <FeedbackContainer 
@@ -399,8 +565,7 @@ export const QuizGame = () => {
             <p>Correct! 🎉</p>
           ) : (
             <p>
-              Incorrect. The correct article for {state.currentWord.german} is{' '}
-              {state.currentWord.article}
+              Incorrect. The correct answer is {state.currentWord.article} {state.currentWord.german}
             </p>
           )}
         </FeedbackContainer>
