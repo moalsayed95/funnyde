@@ -386,6 +386,14 @@ const ConfirmButton = styled.button`
   }
 `
 
+const updateHighScore = (currentScore: number, prevHighScore: number) => {
+  if (currentScore > prevHighScore) {
+    localStorage.setItem('highScore', currentScore.toString())
+    return currentScore
+  }
+  return prevHighScore
+}
+
 export const QuizGame = () => {
   const [state, setState] = useState<QuizState>({
     currentWord: null,
@@ -434,14 +442,17 @@ export const QuizGame = () => {
       }))
     } else {
       // In article-only mode, proceed with feedback and next word
-      setState(prev => ({
-        ...prev,
-        showFeedback: true,
-        isCorrect,
-        lastSelectedArticle: selectedArticle,
-        currentScore: isCorrect ? prev.currentScore + 1 : prev.currentScore,
-        highScore: isCorrect && prev.currentScore + 1 > prev.highScore ? prev.currentScore + 1 : prev.highScore,
-      }))
+      setState(prev => {
+        const newScore = isCorrect ? prev.currentScore + 1 : prev.currentScore
+        return {
+          ...prev,
+          showFeedback: true,
+          isCorrect,
+          lastSelectedArticle: selectedArticle,
+          currentScore: newScore,
+          highScore: updateHighScore(newScore, prev.highScore)
+        }
+      })
       setTimeout(selectNewWord, 2000)
     }
   }
@@ -457,13 +468,16 @@ export const QuizGame = () => {
     const isWordCorrect = state.writtenAnswer.trim().toLowerCase() === state.currentWord.german.toLowerCase()
     const isCorrect = isArticleCorrect && isWordCorrect
 
-    setState(prev => ({
-      ...prev,
-      showFeedback: true,
-      isCorrect,
-      currentScore: isCorrect ? prev.currentScore + 1 : prev.currentScore,
-      highScore: isCorrect && prev.currentScore + 1 > prev.highScore ? prev.currentScore + 1 : prev.highScore,
-    }))
+    setState(prev => {
+      const newScore = isCorrect ? prev.currentScore + 1 : prev.currentScore
+      return {
+        ...prev,
+        showFeedback: true,
+        isCorrect,
+        currentScore: newScore,
+        highScore: updateHighScore(newScore, prev.highScore)
+      }
+    })
 
     setTimeout(selectNewWord, 2000)
   }
@@ -573,7 +587,7 @@ export const QuizGame = () => {
 
       <ScoreContainer data-testid="score-display">
         <p>Current Score: <span data-testid="current-score">{state.currentScore}</span></p>
-        <p>High Score: {state.highScore}</p>
+        <p>Highest Score: <span>{state.highScore}</span></p>
       </ScoreContainer>
     </QuizContainer>
   )
