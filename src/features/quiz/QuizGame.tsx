@@ -338,7 +338,7 @@ export const QuizGame = () => {
     } else {
       // In article-only mode, proceed with feedback and next word
       setState(prev => {
-        const newScore = isCorrect ? prev.currentScore + 1 : prev.currentScore
+        const newScore = isCorrect ? prev.currentScore + 1 : 0
         return {
           ...prev,
           showFeedback: true,
@@ -364,7 +364,7 @@ export const QuizGame = () => {
     const isCorrect = isArticleCorrect && isWordCorrect
 
     setState(prev => {
-      const newScore = isCorrect ? prev.currentScore + 1 : prev.currentScore
+      const newScore = isCorrect ? prev.currentScore + 1 : 0
       return {
         ...prev,
         showFeedback: true,
