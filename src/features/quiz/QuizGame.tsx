@@ -121,17 +121,19 @@ const TEMP_WORDS: Word[] = [
 
 
 const QuizContainer = styled.div`
-  width: 100%;
+  width: 100vw;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   background: white;
   border-radius: 24px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 3rem;
-  min-height: 500px;
+  padding: 2rem;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 `
 
 const QuestionText = styled.h2`
@@ -218,22 +220,30 @@ interface StyledFeedbackProps {
 }
 
 const FeedbackContainer = styled.div<StyledFeedbackProps>`
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
   width: 100%;
   max-width: 500px;
   background-color: ${props => props.$isCorrect ? '#ecfdf5' : '#fef2f2'};
   padding: 1.5rem;
   border-radius: 16px;
-  margin: 2rem 0;
   color: ${props => props.$isCorrect ? '#065f46' : '#991b1b'};
   text-align: center;
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 1.1rem;
   font-weight: 500;
   border: 1px solid ${props => props.$isCorrect ? '#a7f3d0' : '#fecaca'};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  animation: slideUpFade 2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 1rem;
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes slideUpFade {
+    0% { opacity: 0; transform: translate(-50%, 0); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    85% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 0); }
   }
 `
 

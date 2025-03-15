@@ -49,21 +49,17 @@ const AppContainer = styled.div`
 
 const MainContent = styled.main`
   flex: 1;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
   position: relative;
   z-index: 1;
 `
 
 const ContentWrapper = styled.div`
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  perspective: 1000px;
-  transform-style: preserve-3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `
 
 function App() {
