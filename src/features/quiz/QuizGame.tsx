@@ -142,8 +142,17 @@ const FeedbackContainer = styled.div<StyledFeedbackProps>`
   }
 `
 
+const ActionArea = styled.div`
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  gap: 1rem;
+`
+
 const ScoreContainer = styled.div`
-  margin-top: 2.5rem;
   font-size: 1.1rem;
   color: #4b5563;
   text-align: center;
@@ -281,6 +290,15 @@ const ConfirmButton = styled.button`
   }
 `
 
+const ContentArea = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+  flex: 1;
+`
+
 const updateHighScore = (currentScore: number, prevHighScore: number) => {
   if (currentScore > prevHighScore) {
     localStorage.setItem('highScore', currentScore.toString())
@@ -409,61 +427,69 @@ export const QuizGame = () => {
         </ToggleSwitch>
       </ModeToggle>
 
-      <QuestionText data-testid="question-text">
-        Write "{state.currentWord.english}" in German
-      </QuestionText>
+      <ContentArea>
+        <QuestionText data-testid="question-text">
+          Write "{state.currentWord.english}" in German
+        </QuestionText>
 
-      <div data-testid="article-buttons">
-        <ButtonContainer>
-          {(['der', 'die', 'das'] as Article[]).map(article => (
-            <ArticleButton
-              key={article}
-              onClick={() => handleArticleSelection(article)}
-              $isSelected={article === state.lastSelectedArticle}
-              data-testid={article === state.currentWord?.article ? 'correct-article' : undefined}
+        <div data-testid="article-buttons">
+          <ButtonContainer>
+            {(['der', 'die', 'das'] as Article[]).map(article => (
+              <ArticleButton
+                key={article}
+                onClick={() => handleArticleSelection(article)}
+                $isSelected={article === state.lastSelectedArticle}
+                data-testid={article === state.currentWord?.article ? 'correct-article' : undefined}
+              >
+                {article}
+              </ArticleButton>
+            ))}
+          </ButtonContainer>
+        </div>
+
+        <GermanWord
+          type="text"
+          placeholder="Type the German word here"
+          value={state.isWritingMode ? state.writtenAnswer : state.currentWord.german}
+          onChange={handleWrittenAnswerChange}
+          onKeyPress={handleKeyPress}
+          readOnly={!state.isWritingMode}
+        />
+
+        <SpecialCharacters>
+          {['ä', 'ö', 'ü', 'ß'].map(char => (
+            <SpecialCharButton 
+              key={char}
+              onClick={() => {
+                if (state.isWritingMode) {
+                  setState(prev => ({
+                    ...prev,
+                    writtenAnswer: prev.writtenAnswer + char
+                  }))
+                }
+              }}
+              disabled={!state.isWritingMode}
             >
-              {article}
-            </ArticleButton>
+              {char}
+            </SpecialCharButton>
           ))}
-        </ButtonContainer>
-      </div>
+        </SpecialCharacters>
 
-      <GermanWord
-        type="text"
-        placeholder="Type the German word here"
-        value={state.isWritingMode ? state.writtenAnswer : state.currentWord.german}
-        onChange={handleWrittenAnswerChange}
-        onKeyPress={handleKeyPress}
-        readOnly={!state.isWritingMode}
-      />
-
-      <SpecialCharacters>
-        {['ä', 'ö', 'ü', 'ß'].map(char => (
-          <SpecialCharButton 
-            key={char}
-            onClick={() => {
-              if (state.isWritingMode) {
-                setState(prev => ({
-                  ...prev,
-                  writtenAnswer: prev.writtenAnswer + char
-                }))
-              }
-            }}
-            disabled={!state.isWritingMode}
-          >
-            {char}
-          </SpecialCharButton>
-        ))}
-      </SpecialCharacters>
-
-      {state.isWritingMode && (
-        <ConfirmButton
-          onClick={handleAnswerSubmit}
-          disabled={!state.lastSelectedArticle || !state.writtenAnswer.trim()}
-        >
-          Check Answer
-        </ConfirmButton>
-      )}
+        <ActionArea>
+          {state.isWritingMode && (
+            <ConfirmButton
+              onClick={handleAnswerSubmit}
+              disabled={!state.lastSelectedArticle || !state.writtenAnswer.trim()}
+            >
+              Check Answer
+            </ConfirmButton>
+          )}
+          <ScoreContainer data-testid="score-display">
+            <p>Current Score: <span data-testid="current-score">{state.currentScore}</span></p>
+            <p>Highest Score: <span>{state.highScore}</span></p>
+          </ScoreContainer>
+        </ActionArea>
+      </ContentArea>
 
       {state.showFeedback && state.lastSelectedArticle && (
         <FeedbackContainer 
@@ -479,11 +505,6 @@ export const QuizGame = () => {
           )}
         </FeedbackContainer>
       )}
-
-      <ScoreContainer data-testid="score-display">
-        <p>Current Score: <span data-testid="current-score">{state.currentScore}</span></p>
-        <p>Highest Score: <span>{state.highScore}</span></p>
-      </ScoreContainer>
     </QuizContainer>
   )
 } 
