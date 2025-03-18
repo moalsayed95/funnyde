@@ -2,10 +2,12 @@
  * Main App Component
  * 
  * This is the root component of our application that sets up the main layout
- * and includes the QuizGame component.
+ * and includes the Dashboard component.
  */
 
+import { Dashboard } from './features/dashboard/Dashboard'
 import { QuizGame } from './features/quiz/QuizGame'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import styled, { createGlobalStyle } from 'styled-components'
 
 const GlobalStyle = createGlobalStyle`
@@ -47,33 +49,18 @@ const AppContainer = styled.div`
   }
 `
 
-const MainContent = styled.main`
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-`
-
-const ContentWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`
-
 function App() {
   return (
-    <>
+    <Router>
       <GlobalStyle />
       <AppContainer>
-        <MainContent>
-          <ContentWrapper>
-            <QuizGame />
-          </ContentWrapper>
-        </MainContent>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/quiz" element={<QuizGame />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </AppContainer>
-    </>
+    </Router>
   )
 }
 

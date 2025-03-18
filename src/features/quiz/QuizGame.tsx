@@ -14,20 +14,18 @@ import { useState, useEffect, useCallback, KeyboardEvent } from 'react'
 import styled from 'styled-components'
 import { Article, QuizState } from '../../types/quiz'
 import { GERMAN_WORDS } from '../../data/words'
+import { useNavigate } from 'react-router-dom'
 
 const QuizContainer = styled.div`
-  width: 100vw;
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: white;
   border-radius: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 2rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
 `
 
@@ -39,6 +37,14 @@ const QuestionText = styled.h2`
   text-align: center;
   width: 100%;
   letter-spacing: -0.02em;
+`
+
+const TargetWord = styled.span`
+  color: #2563eb;
+  background-color: #eff6ff;
+  padding: 0.2em 0.4em;
+  border-radius: 8px;
+  font-weight: 800;
 `
 
 const ButtonContainer = styled.div`
@@ -299,6 +305,28 @@ const ContentArea = styled.div`
   flex: 1;
 `
 
+const BackButton = styled.button`
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+`
+
 const updateHighScore = (currentScore: number, prevHighScore: number) => {
   if (currentScore > prevHighScore) {
     localStorage.setItem('highScore', currentScore.toString())
@@ -308,6 +336,7 @@ const updateHighScore = (currentScore: number, prevHighScore: number) => {
 }
 
 export const QuizGame = () => {
+  const navigate = useNavigate()
   const [state, setState] = useState<QuizState>({
     currentWord: null,
     currentScore: 0,
@@ -415,6 +444,10 @@ export const QuizGame = () => {
 
   return (
     <QuizContainer>
+      <BackButton onClick={() => navigate('/')}>
+        ← Back to Dashboard
+      </BackButton>
+
       <ModeToggle>
         <span>Writing Mode</span>
         <ToggleSwitch>
@@ -429,7 +462,7 @@ export const QuizGame = () => {
 
       <ContentArea>
         <QuestionText data-testid="question-text">
-          Write "{state.currentWord.english}" in German
+          Write <TargetWord>"{state.currentWord.english}"</TargetWord> in German
         </QuestionText>
 
         <div data-testid="article-buttons">
