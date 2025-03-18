@@ -47,7 +47,7 @@ const TextInput = styled.textarea`
   resize: none;
   background: transparent;
   color: transparent;
-  caret-color: #1f2937;
+  caret-color: transparent;
   position: absolute;
   top: 0;
   left: 0;
