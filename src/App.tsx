@@ -7,6 +7,7 @@
 
 import { Dashboard } from './features/dashboard/Dashboard'
 import { QuizGame } from './features/quiz/QuizGame'
+import { OnRepeat } from './features/typing/OnRepeat'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import styled, { createGlobalStyle } from 'styled-components'
 
@@ -57,6 +58,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/quiz" element={<QuizGame />} />
+          <Route path="/typing" element={<OnRepeat />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppContainer>

@@ -98,7 +98,13 @@ const features: FeatureCard[] = [
     icon: '📚',
     path: '/quiz'
   },
-  // Add more features here as they are developed
+  {
+    id: 'on-repeat',
+    title: 'On Repeat',
+    description: 'Practice typing German text while improving your typing speed and accuracy. Choose from various text categories like emails and complaints.',
+    icon: '⌨️',
+    path: '/typing'
+  }
 ]
 
 export const Dashboard = () => {
